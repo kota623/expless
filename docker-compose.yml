@@ -1,0 +1,42 @@
+version: "3"
+services:
+  expless_mysql:
+    image: mysql:8.0
+    hostname: expless_mysql
+    container_name: expless_mysql
+    build: ./mysql
+    environment:
+      - TZ=Asia/Tokyo
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=expless_mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/conf:/etc/mysql/conf.d/:ro
+      - mysqldata:/var/lib/mysql
+    networks:
+      - default
+  app:
+    image: node:12
+    hostname: expless_app
+    container_name: expless_app
+    environment:
+      - TZ=Asia/Tokyo
+      - DEBUG=app:*
+    tty: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app
+      - ./logs:/root/.npm/_logs/
+    working_dir: /app
+    command: npm start
+    networks:
+      - default
+    depends_on:
+      - expless_mysql
+networks:
+  default:
+# コンテナが削除されてもデータが消えずに保持される
+volumes:
+  mysqldata:
